@@ -1,6 +1,6 @@
 # File search_catalog.rb
 require 'optparse'
-# Class to search through a particular type of information. eg. Dinosaurs
+# SEARCH CATALOG CLASS USED TO SEARCH CATALOG ENTRIES
 class SearchCatalog
   attr_accessor :columns, :options
 
@@ -44,27 +44,30 @@ HELP_TEXT
     extend Hirb::Console
     self.columns = search_columns
     self.options = []
-    search_columns.each do |column|
-      create_column_methods(column)
-    end
+    define_column_methods
   end
 
-  def create_column_methods(column)
-    self.class.class_eval do
-      define_method "search_#{column.downcase}" do |catalog, *args|
-        catalog.select do |_k, v|
-          val    = false
-          values = v.method("#{column.downcase}").call
-          args.each { |arg| val = values.to_s.include?(arg) }
-          val
+  def define_column_methods
+    columns.each do |column|
+      self.class.class_eval do
+        define_method "search_#{column.downcase}" do |catalog, *args|
+          catalog.select do |k, v|
+            filter_catalog(k, v, args)
+          end
         end
       end
     end
   end
 
+  def filter_catalog(_k, v, *args)
+    val    = false
+    values = v.method("#{column.downcase}").call
+    args.each { |arg| val = values.to_s.include?(arg) }
+    val
+  end
+
   def big(catalog)
     catalog.select do |_k, v|
-
       v.weight.to_i > 2000
     end
   end
@@ -76,32 +79,28 @@ HELP_TEXT
   end
 
   def search(catalog, terms)
-    search_catalog = catalog.dup
-    instance_options(terms).each do |option|
-      case option
-      when Array
-        search_catalog = catalog_is_array(option, search_catalog)
-      when Hash
-        search_catalog = catalog_is_hash(option, search_catalog)
-      else
+    search_catalog  = catalog.dup
+    catalog_options = get_options(terms)
+    unless catalog_options.empty?
+      catalog_options.each do |option|
+        case option
+        when Array
+          option.each do |opt|
+            case opt
+            when Symbol
+              search_catalog = method(opt).call(search_catalog)
+            else
+              search_catalog = search_text(search_catalog, opt)
+            end
+          end
+        when Hash
+          option.each do |k, v|
+            search_catalog = method("search_#{k}").call(search_catalog, v)
+          end
+        else
+        end
       end
-    end
-  end
-
-  def catalog_is_hash(option, search_catalog)
-    option.each do |k, v|
-      method("search_#{k}").call(search_catalog, v)
-    end
-  end
-
-  def catalog_is_array(option, search_catalog)
-    option.each do |opt|
-      case opt
-      when Symbol
-        return method(opt).call(search_catalog)
-      else
-        return search_text(search_catalog, opt)
-      end
+      search_catalog
     end
   end
 
@@ -116,14 +115,13 @@ HELP_TEXT
     end
   end
 
-  def instance_options(terms)
+  def get_options(terms)
     self.options = []
     terms.split(',').each_with_index do |term, index|
       text    = text_search?(term, index)
       keyword = nil
       keyword = keyword?(term, index) unless text
       argument?(term, index) unless keyword || text
-
     end
     options
   end
@@ -144,12 +142,14 @@ HELP_TEXT
     end
   end
 
-  def text_search?(term, index, text_search = [], full_text_search = [])
+  def text_search?(term, index)
     match = match_text_search(term)
     if match
-      new_terms = term.to_s.delete("'").delete('"')
+      # text_search = []
+      full_text_search = []
+      new_terms        = term.to_s.delete("'").delete('"')
       full_text_search << new_terms.strip
-      text_search << new_terms.split(' ')
+      # text_search << new_terms.split(' ')
       add_to_options(full_text_search, index)
       true
     else
@@ -172,11 +172,11 @@ HELP_TEXT
     end
   end
 
-  def search_help
-    HELP_TEXT
-  end
-
   def show_info(catalog, *terms)
     catalog.select { |_k, v| terms.include?(v) }
+  end
+
+  def search_help
+    HELP_TEXT
   end
 end
