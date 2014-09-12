@@ -3,7 +3,6 @@
 class Dinosaur
   attr_accessor :name, :period, :continent, :diet, :weight,
                 :walking, :description
-  attr_writer :weight
   HEADERS = %w(Name Period Continent Diet Weight Walking Description)
 
   def self.fields
@@ -22,6 +21,8 @@ class Dinosaur
       end
     end
   end
+
+  attr_writer :weight
 
   def table_display
     data    = []

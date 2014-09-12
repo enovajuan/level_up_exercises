@@ -6,30 +6,20 @@ require 'hirb'
 require './csv_converters'
 require './dinosaur'
 require './search_catalog'
-# DinoDex Super Awesome Fun Time Main Class
+
+# Dinodex Class for Awesomeness
 class Dinodex
   attr_accessor :catalog, :search_klass
-  AVAILABLE_COMMANDS = <<AVAILABLE_COMMANDS
-Available Commands: search | info | exit
-----------------------------------------
-list:	To display a list of dinosaurs in
-        catalog
-search:	To search through the catalog
-info:	Displays all entries, and allows
-        you to select any entry number
-        for more information
-exit:	To exit the application
-----------------------------------------
-AVAILABLE_COMMANDS
 
   def initialize(config = {}, search = nil)
     extend Hirb::Console
-    self.catalog = {}
+    self.catalog      = {}
     self.search_klass = search
-    options = { path: config[:path] || '*.csv',
-                headers: true,
-                header_converters: config[:header_converters] || [],
-                converters: config[:converters] || []
+    options           = {
+      path:              config[:path] || '*.csv',
+      headers:           true,
+      header_converters: config[:header_converters] || [],
+      converters:        config[:converters] || []
     }
     process_csv(options)
   end
@@ -56,16 +46,8 @@ AVAILABLE_COMMANDS
     while input != 'exit'
       puts search_klass.search_help if input == '--help'
       print 'Query: '
-      input = gets.chomp
+      input   = gets.chomp
       results = search_klass.search(catalog, input)
-      query_result(results)
-    end
-  end
-
-  def query_result(results)
-    if results.nil?
-      puts 'No results found. Please try again.'
-    else
       table results.values, fields: Dinosaur.fields
     end
   end
@@ -92,28 +74,34 @@ AVAILABLE_COMMANDS
   def get_info(input)
     selected = search_klass.show_info(catalog, *input)
     table selected.values, fields: Dinosaur.fields
-    print 'Do you wish to contine? yes/no'
+    print 'Do you wish to continue? yes/no'
     answer = gets.chomp
     'back' if answer == 'no'
   end
 end
 
-dex_config = { path: '*.csv', headers: true,
-               converters: [:weight_in_lbs, :diet, :all],
+dex_config = { path:              '*.csv', headers: true, include_headers: true,
+               converters:        [:weight_in_lbs, :diet, :all],
                header_converters: [:africa, :symbol] }
 
 search = SearchCatalog.new(Dinosaur::HEADERS)
-dex = Dinodex.new(dex_config, search)
+dex    = Dinodex.new(dex_config, search)
 puts dex.show_app_title
 
 def available_commands
-  puts Dinodex::AVAILABLE_COMMANDS
+  puts 'Available Commands: search | info | exit'
+  puts '-' * 40
+  puts "list:\tTo display a list of dinosaurs in catalog"
+  puts "search:\tTo search through the catalog"
+  puts "info:\tDisplays all entries, and allows you to select any"\
+  ' entry number for more information'
+  puts "exit:\tTo exit the application"
+  puts '-' * 40
   print 'Enter a command: '
   gets.chomp
 end
 
 command = available_commands
-defaults = %w('exit search info list back')
 
 while command != 'exit'
   if command == 'search'
@@ -126,12 +114,6 @@ while command != 'exit'
   end
   if command == 'list'
     dex.list
-    command = available_commands
-  end
-  unless defaults.include? command
-    puts "#{'*' * 40}"
-    puts "COMMAND NOT RECOGNIZED: #{command}"
-    puts "#{'*' * 40}"
     command = available_commands
   end
 end

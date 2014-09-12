@@ -28,6 +28,7 @@ CSV::Converters[:weight_in_lbs] = lambda do |weight, field_info|
 end
 
 CSV::Converters[:blank] = lambda do |value|
+
   if value
     value
   else
