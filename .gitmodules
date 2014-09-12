@@ -1,0 +1,6 @@
+[submodule "arrowhead"]
+	path = arrowhead
+	url = https://github.com/enovajuan/arrowhead.git
+[submodule "data_science"]
+	path = data_science
+	url = https://github.com/enovajuan/data_science.git
