@@ -4,3 +4,15 @@
 [submodule "data_science"]
 	path = data_science
 	url = https://github.com/enovajuan/data_science.git
+[submodule "dino_catalog"]
+	path = dino_catalog
+	url = https://github.com/enovajuan/dino_catalog.git
+[submodule "short_methods"]
+	path = short_methods
+	url = https://github.com/enovajuan/short_methods.git
+[submodule "supportive"]
+	path = supportive
+	url = https://github.com/enovajuan/supportive.git
+[submodule "overlord"]
+	path = overlord
+	url = https://github.com/enovajuan/overlord.git
