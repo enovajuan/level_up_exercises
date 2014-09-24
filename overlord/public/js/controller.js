@@ -3,21 +3,6 @@
  */
 'use strict';
 
-//var bombApp = angular.module('bombApp', []);
-
-
-function timeFormatter(text) {
-    if (!text) text = '';
-    text = text.toString();
-    var i = text.length;
-    while (i < 6) {
-        text = "0".concat(text);
-        i++
-    }
-    return vsprintf("%d%d:%d%d:%d%d", text.split(""))
-
-}
-
 bombApp.directive('bombtime', function () {
     return {
         restrict: 'A',
@@ -39,12 +24,11 @@ bombApp.directive('bombtime', function () {
             $scope.buttonLabel = 'NEXT';
             $scope.bombExploded = false;
 
-            $scope.$on('timer-stopped', function (event, data){
+            $scope.$on('timer-stopped', function (event, data) {
                 console.log('Timer Stopped - data = ', data);
                 var completed = data.seconds;
 
-                if(completed >= $scope.detonation_time)
-                {
+                if (completed >= $scope.detonation_time) {
                     $scope.detonate();
                 }
             });
@@ -60,12 +44,10 @@ bombApp.directive('bombtime', function () {
                     foundIndex = findInputInInputs(focusedInput, inputs),
                     index = 0;
 
-                if($scope.activationForm.$valid)
-                {
+                if ($scope.activationForm.$valid) {
                     $scope.buttonLabel = 'SUBMIT'
                 }
-                else
-                {
+                else {
                     $scope.buttonLabel = 'NEXT'
                 }
 
@@ -91,32 +73,27 @@ bombApp.directive('bombtime', function () {
                             }
                         }
                         inputs.eq(index).focus();
-                        if($scope.activationForm.$valid && !$scope.bombActive && !$scope.bombReady)
-                        {
+                        if ($scope.activationForm.$valid && !$scope.bombActive && !$scope.bombReady) {
                             $scope.submit();
                         }
-                        if($scope.bombReady){
+                        if ($scope.bombReady) {
                             $scope.activate();
                         }
-                        if($scope.bombActive)
-                        {
+                        if ($scope.bombActive) {
                             $scope.deactivate();
                         }
                         break;
                     case "ACTIVATE":
 
-                        if($scope.bombReady && !$scope.bombActive)
-                        {
+                        if ($scope.bombReady && !$scope.bombActive && !$scope.bombExploded) {
                             $scope.activate();
                         }
-                        if($scope.bombReady && $scope.bombActive)
-                        {
+                        if ($scope.bombReady && $scope.bombActive && !$scope.bombExploded) {
                             $scope.deactivate();
                         }
                         break;
                     case "DEACTIVATE":
-                        if($scope.bombReady && $scope.bombActive)
-                        {
+                        if ($scope.bombReady && $scope.bombActive) {
                             $scope.deactivate();
                         }
                         break;
@@ -168,7 +145,6 @@ bombApp.directive('bombtime', function () {
                 Bomb.detonate({id: $scope.bomb_id}, success, failure)
 
 
-
             };
             $scope.deactivate = function (name) {
                 console.log("deactivate");
@@ -193,22 +169,23 @@ bombApp.directive('bombtime', function () {
 
                 }
 
-                Bomb.deactivate({id: $scope.bomb_id, deactivation_code: $scope.deactivation_entry}, success, failure)
-
+                if ($scope.bombExploded) {
+                    Bomb.deactivate({id: $scope.bomb_id, deactivation_code: $scope.deactivation_entry}, success, failure)
+                }
 
 
             };
 
             $scope.cutWire = function (wire_id) {
                 console.log("cutting wire");
-                 $('#wire_'+wire_id).hide();
+                $('#wire_' + wire_id).hide();
 
 
                 function success(response) {
                     console.log("success", response);
                     var status = response.status;
                     var message = response.message;
-                    switch(status){
+                    switch (status) {
                         case "exploded":
                             $scope.bombActive = false;
                             $scope.bombExploded = true;
@@ -218,7 +195,7 @@ bombApp.directive('bombtime', function () {
                             $scope.$broadcast('timer-stop');
                             $scope.code_error = "you blew up";
                             settings.colour = tinycolor("black").toHsv();
-                        break;
+                            break;
                         case "defused":
                             $scope.bombActive = false;
                             $scope.bombStatus = status;
@@ -227,18 +204,18 @@ bombApp.directive('bombtime', function () {
                             $scope.$broadcast('timer-stop');
                             $scope.code_error = "nothing to worry about here";
                             settings.colour = tinycolor("green").toHsv();
-                        break;
+                            break;
                     }
 
-                    switch(message){
+                    switch (message) {
                         case "SPEED_UP":
                             $scope.$broadcast('timer-set-interval', 500);
 
-                        break;
+                            break;
                         case "SPEED_DOWN":
                             $scope.$broadcast('timer-set-interval', 1500);
 
-                        break;
+                            break;
                     }
 //                    $scope.bombActive = false;
 //                    $scope.bombStatus = response.status;
@@ -254,8 +231,9 @@ bombApp.directive('bombtime', function () {
 
                 }
 
-                Bomb.cut({id: $scope.bomb_id, wire_id:wire_id}, success, failure)
-
+                if (!$scope.bombExploded) {
+                    Bomb.cut({id: $scope.bomb_id, wire_id: wire_id}, success, failure)
+                }
 
 
             };
@@ -281,8 +259,9 @@ bombApp.directive('bombtime', function () {
 
                 }
 
-                Bomb.activate({id: $scope.bomb_id, activation_code: $scope.activation_code}, success, failure)
-
+                if (!$scope.bombExploded) {
+                    Bomb.activate({id: $scope.bomb_id, activation_code: $scope.activation_code}, success, failure)
+                }
 
 
             };
@@ -307,18 +286,20 @@ bombApp.directive('bombtime', function () {
                 function failure(response) {
                     console.log("failure", response);
                     settings.colour = tinycolor("red").toHsv();
-                    $(response.data).each(function(errors, key)
-                    {
-                        for(var k in key){
-                            $('#'+k+'_errors').html(key[k])
+                    $(response.data).each(function (errors, key) {
+                        for (var k in key) {
+                            $('#' + k + '_errors').html(key[k])
                         }
                     });
                 }
+
                 var form = $scope.activationForm;
                 var data = {activation_code: form.activation_code.$modelValue,
-                        deactivation_code: form.deactivation_code.$modelValue,
-                        detonation_time: form.detonation_time.$modelValue};
-                Bomb.submit(data, success, failure)
+                    deactivation_code: form.deactivation_code.$modelValue,
+                    detonation_time: form.detonation_time.$modelValue};
+                if (!$scope.bombExploded) {
+                    Bomb.submit(data, success, failure)
+                }
 
 
             };
@@ -347,8 +328,8 @@ bombApp.directive('bombtime', function () {
                 return result.join(", ");
             };
 
-            $scope.tentacleColor = function(color){
-              settings.colour = tinycolor(color).toHsv();
+            $scope.tentacleColor = function (color) {
+                settings.colour = tinycolor(color).toHsv();
             };
 
 
