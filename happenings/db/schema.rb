@@ -84,13 +84,11 @@ ActiveRecord::Schema.define(version: 20141003162254) do
 
   create_table "venue_events", force: true do |t|
     t.integer  "events_id"
-    t.integer  "event_dates_id"
     t.integer  "venue_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "venue_events", ["event_dates_id"], name: "index_venue_events_on_event_dates_id", using: :btree
   add_index "venue_events", ["events_id"], name: "index_venue_events_on_events_id", using: :btree
   add_index "venue_events", ["venue_id"], name: "index_venue_events_on_venue_id", using: :btree
 

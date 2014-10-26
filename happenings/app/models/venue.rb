@@ -1,4 +1,6 @@
 class Venue < ActiveRecord::Base
+  has_many :venue_events
+  has_many :event_dates
   has_many :events
   default_scope -> {order(name: :asc)}
   default_scope -> {includes(:events).all}

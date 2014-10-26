@@ -8,7 +8,7 @@ FactoryGirl.define do
 
     factory :invalid_event_date do
       event nil
-      venue nil
+      # venue nil
       date_time nil
 
     end
