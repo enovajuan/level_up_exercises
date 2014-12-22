@@ -19,7 +19,7 @@
   <dt><strong><%= model_class.human_attribute_name(:running_time) %>:</strong></dt>
   <dd><%= @event.running_time %></dd>
   <dt><strong><%= model_class.human_attribute_name(:event_url) %>:</strong></dt>
-  <dd><%= link_to @event.event_url %></dd>
+  <dd><%= link_to "link", @event.event_url %></dd>
   <dt><strong><%= model_class.human_attribute_name(:ticket_url) %>:</strong></dt>
   <dd><%= @event.ticket_url %></dd>
 </dl>

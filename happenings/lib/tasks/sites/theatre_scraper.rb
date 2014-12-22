@@ -94,7 +94,7 @@ class TheatreScraper < EventScraper
   end
 
   def query_args
-    { month: 10, year: 2014, ran: 6563 }
+    { month: 11, year: 2014, ran: 6563 }
   end
 
   private
